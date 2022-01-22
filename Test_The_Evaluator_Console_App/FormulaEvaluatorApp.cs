@@ -41,7 +41,7 @@ namespace FormulaEvaluator
                 try
                 {
 
-                    Console.WriteLine("formula: " + formula + " = " + FormulaEvaluator.Evaluate(formula, fakeLookup) + "\n");
+                    Console.WriteLine("formula: " + formula + " = " + Evaluator.Evaluate(formula, fakeLookup) + "\n");
                 }
                 catch (Exception e)
                 {
