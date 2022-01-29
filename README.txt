@@ -15,6 +15,12 @@ Copyright: CS 3500 and Nathan Hammond - This work may not be copied for use in A
   program in it.  As the semester continues, I will update this readme file to include what I have done.  
   For the meantime, please view the other README file for the FormulaEvaluator project.
 
+# Time log:
+
+  Hours Estimated/Worked	Assignment				Note
+  	15	 /	10	Assignment 1- Formula Evaluator		It turned out to be a little easier than I thought.  I had a few bugs at the end which took extra time though.
+	12	 /	12	Assignment 2- Dependency Graph		I wish I started early so that I could have had more time to write more tests.  Because I think with more time, I would have written more tests.
+
 # Assignment Specific Topics
 - Not applicable
 
