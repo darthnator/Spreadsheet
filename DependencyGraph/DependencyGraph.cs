@@ -68,16 +68,34 @@ namespace SpreadsheetUtilities
         /// It should return the size of dependees("a")
         /// </summary>
         public int this[string s]
+        {
+            get
             {
-                get { return dependees[s].Count; }
+                try 
+                { 
+                    return this.dependees[s].Count; 
+                }
+
+                catch 
+                { 
+                    return 0; 
+                }
             }
+        }
 
         /// <summary>
         /// Reports whether dependents(s) is non-empty.
         /// </summary>
         public bool HasDependents(string s)
         {
-            return dependents.Count == 0;
+            try
+            {
+                return this.dependents.Count == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -85,7 +103,14 @@ namespace SpreadsheetUtilities
         /// </summary>
         public bool HasDependees(string s)
         {
-            return dependees.Count == 0;
+            try
+            {
+                return this.dependees.Count > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -93,9 +118,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            if (HasDependents(s))
+            if (this.HasDependents(s))
             {
-                return dependents[s];
+                return this.dependents[s];
             }
             else
             {
@@ -107,9 +132,9 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            if (HasDependees(s))
+            if (this.HasDependees(s))
             {
-                return dependees[s];
+                return this.dependees[s];
             }
             else
             {
@@ -130,23 +155,41 @@ namespace SpreadsheetUtilities
         public void AddDependency(string s, string t)
         {
             // First, check if dependents[s] even exists.  
-            if (dependents.ContainsKey(s))
+            if (this.dependents.ContainsKey(s))
             {
                 // Great!  Now we need to check if it already has t
-                if (dependents[s].Contains(t))
+                if (this.dependents[s].Contains(t))
                 {
                     // splendid!  No work required!
+                    return;
                 }
                 else // we need to add t to dependents[s]
                 {
-                    dependents[s].Add(t);
+                    this.dependents[s].Add(t);
                 }
             }
             else // Then we need to create dependents[s]
             {
-                
-            }
+                HashSet<string> newDependent = new HashSet<string>();
+                newDependent.Add(t);
+                this.dependents.Add(s, newDependent);
 
+                //we also have to create a dependee for t and s
+                if (this.HasDependees(t))
+                {
+                    if (this.dependees.ContainsKey(t))
+                    {
+                        this.dependees[t].Add(s);
+                    }
+                    else
+                    {
+                        HashSet<string> newDependee = new HashSet<string>();
+                        newDependee.Add(s);
+                        this.dependees.Add(t, newDependee);
+                    }
+                }
+            }
+            this.size++;
             
         }
 
@@ -157,6 +200,55 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
+            // check if s even has dependnts
+            if (this.HasDependents(s))
+            {
+                this.dependents[s].Remove(t);
+                this.size--;
+
+                // if s has no other dependents, then just get rid of s altogether
+                if (!this.HasDependents(s))
+                {
+                    this.dependents.Remove(s);
+                }
+
+                if (this.HasDependees(s))
+                {
+                    this.dependees[t].Remove(s);
+
+                    // if t has no other dependees, then just get rid of s altogether
+                    if (!this.HasDependees(t))
+                    {
+                        this.dependees.Remove(s);
+                    }
+                }
+            }
+            // check that s has not dependees
+            else if (this.HasDependees(s)) 
+            {
+                this.dependees[s].Remove(t);
+                this.size--;
+
+                // if s has no other dependees, then just get rid of s altogether
+                if (!this.HasDependees(s))
+                {
+                    this.dependents.Remove(s);
+                }
+
+                if (this.HasDependents(t))
+                {
+                    this.dependents[t].Remove(s);
+
+                    // if t has no other dependents, then just get rid of s altogether
+                    if (this.HasDependents(t) == false)
+                        this.dependents.Remove(s);
+                }
+            }
+            else // if there are no dependents or dependeees
+            {
+                // No action required!
+                return;
+            }
         }
 
         /// <summary>
@@ -165,6 +257,17 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            HashSet<string> replacement = new HashSet<string>(GetDependents(s));
+            // Before we can replace the dependents, we need to remove all of s's dependees
+            foreach (string dependee in replacement)
+            {
+                RemoveDependency(s, dependee);
+            }
+            // now we can add the new dependents to s
+            foreach (string dependent in newDependents)
+            {
+                AddDependency(s, dependent);
+            }
         }
 
         /// <summary>
@@ -173,6 +276,17 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
+            HashSet<string> replacement = new HashSet<string>(GetDependees(s));
+            // Before we can replace the dependees, we need to remove all s's dependees
+            foreach (string dependee in replacement)
+            {
+                RemoveDependency(dependee, s);
+            }
+            // now we can add the new dependees to s
+            foreach (string dependee in newDependees)
+            {
+                AddDependency(dependee, s);
+            }
         }
     }
 }
