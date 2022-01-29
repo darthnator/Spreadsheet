@@ -124,7 +124,8 @@ namespace SpreadsheetUtilities
             }
             else
             {
-                throw new ArgumentException(s + " doesn't have any dependents.");
+                HashSet<string> empty = new HashSet<string>();
+                return empty;
             }
         }
         /// <summary>
@@ -138,7 +139,8 @@ namespace SpreadsheetUtilities
             }
             else
             {
-                throw new ArgumentException(s + " doesn't have any dependees.");
+                HashSet<string> empty = new HashSet<string>();
+                return empty;
             }
         }
 
