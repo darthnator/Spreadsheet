@@ -164,7 +164,216 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
+            // README: Regex substring provided by instructor https://utah.instructure.com/courses/754704/assignments/10141496?module_item_id=16487969
+            string[] substrings = Regex.Split(this.formula, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            String validVariableNames = @"[a-zA-Z]+[0-9]+";
+            // README: https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.stack-1?view=net-6.0
+            Stack<string> operations = new Stack<string>();
+            Stack<double> values = new Stack<double>();
+
+            if (this.formula == "")
+            {
+                throw new ArgumentException("Bruh, give us something to work with.");
+            }
+
+            // Iterate through each token in substrings and perform arithmetic as needed.
+            foreach (String t in substrings)
+            {
+                string token = t.Trim();
+                if (token.Length == 0)
+                {
+                    continue;
+                }
+                // token is an integer
+                // README: https://stackoverflow.com/questions/1752499/c-sharp-testing-to-see-if-a-string-is-an-integer/1752505
+                if (int.TryParse(token, out int number))
+                {
+                    if (operations.Count > 0 && (operations.Peek() == "*" || operations.Peek() == "/"))
+                    {
+
+                        double a = values.Pop(); // Retreive the other value needed to perform the arimetic
+
+                        // for multiplication
+                        if (operations.Peek() == "*")
+                        {
+                            values.Push(Multiply(a, number));
+                        }
+                        // for division
+                        else
+                        {
+                            values.Push(Divide(a, number));
+                        }
+                        operations.Pop();
+
+                    }
+                    else
+                    {
+                        values.Push(number);
+                    }
+                }
+
+                // token is a variable
+                // README: https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.ismatch?view=net-6.0
+                else if (isValid(token))
+                {
+                    if (operations.Count > 0 && operations.Peek() == "*" || operations.Peek() == "/")
+                    {
+                        try
+                        {
+                            double a = values.Pop(); // Retreive the other value needed to perform the arimetic
+
+                            // for multiplication
+                            if (operations.Peek() == "*")
+                            {
+                                values.Push(Multiply(a, lookup(normalize(token))));
+                            }
+                            // for division
+                            else values.Push(Divide(a, lookup(normalize(token))));
+                            operations.Pop();
+                        }
+                        catch (Exception)
+                        {
+                            throw new Exception("There are no values in the values stack...");
+                        }
+
+                    }
+                    else
+                    {
+                        values.Push(lookup(normalize(token)));
+                    }
+                }
+
+                // token is + or -
+                else if (token == "+" || token == "-")
+                {
+                    if (operations.Count > 0 && (operations.Peek() == "+" || operations.Peek() == "-"))
+                    {
+
+                        double b = values.Pop();
+                        double a = values.Pop();
+                        // for addition
+                        if (operations.Peek() == "+")
+                        {
+                            values.Push(Add(a, b));
+                        }
+                        // for subtraction
+                        else
+                        {
+                            values.Push(Subtract(a, b));
+                        }
+
+                    }
+                    operations.Push(token);
+                }
+
+                // token is * or /
+                else if (token == "*" || token == "/")
+                {
+                    operations.Push(token);
+                }
+
+                // token is a left parenthesis "("
+                else if (token == "(")
+                {
+                    operations.Push(token);
+                }
+
+                // token is a right parenthesis ")"
+                else if (token == ")")
+                {
+                    if (operations.Count > 0 && (operations.Peek() == "+" || operations.Peek() == "-"))
+                    {
+
+                        double b = values.Pop();
+                        double a = values.Pop();
+                        // for addition
+                        if (operations.Peek() == "+")
+                        {
+                            values.Push(Add(a, b));
+                        }
+                        // for subtraction
+                        else
+                        {
+                            values.Push(Subtract(a, b));
+                        }
+
+
+                        operations.Pop();
+                    }
+
+                    // get rid of the left parenthesis
+                    if (operations.Count > 0 && operations.Peek() == "(")
+                    {
+                        operations.Pop();
+                    }
+                    else
+                    {
+                        throw new ArgumentException("There wasn't an accompanying left parenthesis to your right parenthesis...");
+                    }
+
+                    // Step three: * or /
+                    if (operations.Count > 0 && (operations.Peek() == "*" || operations.Peek() == "/"))
+                    {
+                        try
+                        {
+                            double b = values.Pop();
+                            double a = values.Pop();
+                            // for multiplication
+                            if (operations.Peek() == "*")
+                            {
+                                values.Push(Multiply(a, b));
+                            }
+                            // for Divide
+                            else values.Push(Divide(a, b));
+                            operations.Pop();
+                        }
+                        catch
+                        {
+                            throw new ArgumentException("something went wrong when you tried to read a + or -...");
+                        }
+
+                    }
+
+                }
+
+                // token is anything else
+                else throw new ArgumentException("This formula can not be evaluated because there is an invalid token: " + token);
+            }
+
+            // Now that the we've gone through each token in our formula, it's time to return the evaluated value...
+
+            // Operator stack is empty
+            if (operations.Count == 0)
+            {
+                if (values.Count == 1)
+                {
+                    return values.Pop();
+                }
+                else throw new ArgumentException("Why doesn't values.Count equal 1?");
+
+            }
+            // Operator stack is not empty
+            else
+            {
+                // verify that there is only one operator on the operator stack and that it is + or -.
+                if (operations.Peek() != "+" && operations.Peek() != "-") throw new Exception("Why is there not a plus or minus in the operations stack?");
+                // verif that there are exactly two values on the values stack.
+                if (values.Count != 2)
+                {
+                    throw new Exception("Why is there not exactly two values in the value stack?");
+                }
+
+                // perform the arithmetic on the 
+                double b = values.Pop();
+                double a = values.Pop();
+
+                if (operations.Peek() == "+")
+                {
+                    return Add(a, b);
+                }
+                else return Subtract(a, b);
+            }
+
         }
 
         /// <summary>
@@ -290,6 +499,54 @@ namespace SpreadsheetUtilities
                 }
             }
 
+        }
+
+        /// <summary>
+        /// Multiplies two numbers together.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="number"></param>
+        /// <returns>A whole number</returns>
+        private static double Multiply(double a, double number)
+        {
+            return a * number;
+        }
+
+        /// <summary>
+        /// Divides two numbers together.  
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="number"></param>
+        /// <returns>A whole number or a DivideByZeroException</returns>
+        private static double Divide(double a, double number)
+        {
+            if (number == 0)
+            {
+                throw new DivideByZeroException("This formula can not be evaluated because it divides by zero.");
+            }
+            else return a / number;
+        }
+
+        /// <summary>
+        /// Adds two numbers together.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>A whole number</returns>
+        private static double Add(double a, double b)
+        {
+            return a + b;
+        }
+
+        /// <summary>
+        /// Subtracts two numbers together.
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns>A whole number</returns>
+        private static double Subtract(double a, double b)
+        {
+            return a - b;
         }
     }
 
