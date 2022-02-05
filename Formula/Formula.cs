@@ -166,7 +166,7 @@ namespace SpreadsheetUtilities
         {
             // README: Regex substring provided by instructor https://utah.instructure.com/courses/754704/assignments/10141496?module_item_id=16487969
             string[] substrings = Regex.Split(this.formula, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
-            String validVariableNames = @"[a-zA-Z]+[0-9]+";
+            // String validVariableNames = @"[a-zA-Z]+[0-9]+";
             // README: https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.stack-1?view=net-6.0
             Stack<string> operations = new Stack<string>();
             Stack<double> values = new Stack<double>();
@@ -214,33 +214,38 @@ namespace SpreadsheetUtilities
 
                 // token is a variable
                 // README: https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.ismatch?view=net-6.0
-                else if (isValid(token))
+                else if (Char.IsLetter(token[0]))
                 {
-                    if (operations.Count > 0 && operations.Peek() == "*" || operations.Peek() == "/")
+                    if (isValid(token))
                     {
-                        try
+                        if (operations.Peek() == "*" || operations.Peek() == "/")
                         {
-                            double a = values.Pop(); // Retreive the other value needed to perform the arimetic
-
-                            // for multiplication
-                            if (operations.Peek() == "*")
+                            try
                             {
-                                values.Push(Multiply(a, lookup(normalize(token))));
-                            }
-                            // for division
-                            else values.Push(Divide(a, lookup(normalize(token))));
-                            operations.Pop();
-                        }
-                        catch (Exception)
-                        {
-                            throw new Exception("There are no values in the values stack...");
-                        }
+                                double a = values.Pop(); // Retreive the other value needed to perform the arimetic
 
+                                // for multiplication
+                                if (operations.Peek() == "*")
+                                {
+                                    values.Push(Multiply(a, lookup(normalize(token))));
+                                }
+                                // for division
+                                else values.Push(Divide(a, lookup(normalize(token))));
+                                operations.Pop();
+                            }
+                            catch (Exception)
+                            {
+                                throw new Exception("There are no values in the values stack...");
+                            }
+
+                        }
+                        else
+                        {
+                            values.Push(lookup(normalize(token)));
+                        }
                     }
-                    else
-                    {
-                        values.Push(lookup(normalize(token)));
-                    }
+                    else return new FormulaError("There is an invalid varialbe.");
+                        
                 }
 
                 // token is + or -
