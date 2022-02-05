@@ -199,7 +199,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override string ToString()
         {
-            return null;
+            return this.formula;
         }
 
         /// <summary>
@@ -226,7 +226,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object? obj)
         {
-            return false;
+            if (obj == null || !(obj is Formula)) return false;
+            else return this.ToString() == obj.ToString();
         }
 
         /// <summary>
@@ -236,7 +237,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            return false;
+            if (f1 is null) return f2 is null;
+            else return f1.Equals(f2);
         }
 
         /// <summary>
@@ -246,7 +248,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            return false;
+            return !(f1.Equals(f2));
         }
 
         /// <summary>
@@ -256,7 +258,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()
         {
-            return 0;
+            return this.ToString().GetHashCode();
         }
 
         /// <summary>
