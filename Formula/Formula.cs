@@ -216,7 +216,7 @@ namespace SpreadsheetUtilities
                 // README: https://docs.microsoft.com/en-us/dotnet/api/system.text.regularexpressions.regex.ismatch?view=net-6.0
                 else if (Char.IsLetter(token[0]))
                 {
-                    if (isValid(token))
+                    if (this.isValid(token))
                     {
                         if (operations.Peek() == "*" || operations.Peek() == "/")
                         {
@@ -266,6 +266,7 @@ namespace SpreadsheetUtilities
                         {
                             values.Push(Subtract(a, b));
                         }
+                        operations.Pop();
 
                     }
                     operations.Push(token);
@@ -301,8 +302,6 @@ namespace SpreadsheetUtilities
                         {
                             values.Push(Subtract(a, b));
                         }
-
-
                         operations.Pop();
                     }
 

@@ -127,6 +127,7 @@ namespace FormulaEvaluator
                         {
                             values.Push(Subtract(a, b));
                         }
+                        operations.Pop();
 
                     }
                     operations.Push(token);
