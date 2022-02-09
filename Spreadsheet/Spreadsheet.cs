@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SS
 {
-    class Spreadsheet : AbstractSpreadsheet
+    public class Spreadsheet : AbstractSpreadsheet
     {
         public override object GetCellContents(string name)
         {
