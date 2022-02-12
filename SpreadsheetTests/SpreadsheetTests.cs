@@ -170,12 +170,40 @@ namespace SS
         }
 
         // TESTS FOR SetCellContents- numbers
+        [TestMethod]
+        public void SetCellContent_GiveANumber_A1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            IList<string> list = s.SetCellContents("A1", 1);
+            Assert.IsTrue(list.Contains("A1"));
 
-        
+        }
+
+
+
         // TESTS FOR SetCellContents- text
 
-        
+        [TestMethod]
+        public void SetCellContent_Givetext_A1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            IList<string> list = s.SetCellContents("A1", "Hello");
+            Assert.IsTrue(list.Contains("A1"));
+
+        }
+
+
         // TESTS FOR SetCellContents- formula
+
+        [TestMethod]
+        public void SetCellContent_GiveAFormula_A1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Formula f = new Formula("1+1");
+            IList<string> list = s.SetCellContents("A1", f);
+            Assert.IsTrue(list.Contains("A1"));
+
+        }
 
 
         // TESTS FOR GetDirectDependents
