@@ -170,15 +170,23 @@ namespace SS
         /// </summary>
         protected IEnumerable<String> GetCellsToRecalculate(ISet<String> names)
         {
+            //Step 1: create an empty linked list for storing the soon to be recalculated cells.
             LinkedList<String> changed = new LinkedList<String>();
+            
+            //Step 2: create an empty list so that we can keep track of which cells we have already recaluclated.
             HashSet<String> visited = new HashSet<String>();
+            
+            //Step 3: Go through all the cells (which are provided)
             foreach (String name in names)
             {
+                //Step 4: If the cell hasn't been recalculated, ...
                 if (!visited.Contains(name))
                 {
+                    // Then "visit" it.
                     Visit(name, name, visited, changed);
                 }
             }
+            //Step 5: return the list of all the recalculated cells.
             return changed;
         }
 
@@ -200,18 +208,25 @@ namespace SS
         /// </summary>
         private void Visit(String start, String name, ISet<String> visited, LinkedList<String> changed)
         {
+            // Step 1: add the the cell to the "visited" list.
             visited.Add(name);
+
+            // Step 2: Go through each cell's dependents and, ...
             foreach (String n in GetDirectDependents(name))
             {
+                // ... check if it self circulates, and ..
                 if (n.Equals(start))
                 {
                     throw new CircularException();
                 }
+                // ... check if it's dependents have direct dependents as well, ...
                 else if (!visited.Contains(n))
                 {
+                    // ... if so, "visit" them as well.
                     Visit(start, n, visited, changed);
                 }
             }
+            // Step 3: Once done checking, add the cell to the "visited" list.
             changed.AddFirst(name);
         }
 
