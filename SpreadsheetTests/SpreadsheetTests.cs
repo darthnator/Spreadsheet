@@ -169,20 +169,22 @@ namespace SS
             Assert.AreEqual(SecretMessage, "Hello, how are you today?  I wish you the best this world has to offer!");
         }
 
-        // TESTS FOR SetCellContents- numbers
+        // TESTS FOR SetCellContents
+        
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContent method when a cell is given a number.
+        /// </summary>
         [TestMethod]
         public void SetCellContent_GiveANumber_A1()
         {
             Spreadsheet s = new Spreadsheet();
             IList<string> list = s.SetCellContents("A1", 1);
             Assert.IsTrue(list.Contains("A1"));
-
         }
 
-
-
-        // TESTS FOR SetCellContents- text
-
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContent method when a cell is given a string/text.
+        /// </summary>
         [TestMethod]
         public void SetCellContent_Givetext_A1()
         {
@@ -192,9 +194,9 @@ namespace SS
 
         }
 
-
-        // TESTS FOR SetCellContents- formula
-
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContent method when a cell is given a formula.
+        /// </summary>
         [TestMethod]
         public void SetCellContent_GiveAFormula_A1()
         {
@@ -205,9 +207,153 @@ namespace SS
 
         }
 
+        /// <summary>
+        /// Tests the spreadsheet's SetCellConents method with
+        /// multiple formulas, creating a network of dependents amongst
+        /// the various cells.
+        /// </summary>
+        [TestMethod]
+        public void SetCellContent_MultipleFormulas_CellwithDependents()
+        {
+            Spreadsheet s = new Spreadsheet();
+            double contentOfA1 = 1;
+            Formula contentOfB1 = new Formula("A1+1");
+            Formula contentOfC1 = new Formula("B1+1");
+            Formula contentOfD1 = new Formula("A1+B1+C1+1");
 
-        // TESTS FOR GetDirectDependents
+            IList<string> A1 = s.SetCellContents("A1", contentOfA1);
+            IList<string> B1 = s.SetCellContents("B1", contentOfB1);
+            IList<string> C1 = s.SetCellContents("C1", contentOfC1);
+            IList<string> D1 = s.SetCellContents("D1", contentOfD1);
+
+            Assert.AreEqual(A1.ToString(), "A1, B1, C1, D1");
+        }
+
+        // if a cellname is null
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when the name is null and a number
+        /// is given.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsNullWithNumber_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents(null, 1);
+        }
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when the name is null and a string 
+        /// is given.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsNullWithText_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents(null, "null name...");
+        }
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when the name is null and a formula
+        /// is given.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsNullWithFormula_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Formula f = new Formula("1+1");
+            s.SetCellContents(null, f);
+        }
+
+        // if a cellname is invalid
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when you give it an invalid name and
+        /// a number.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsInvalidWithNumber_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("A!", 1);
+        }
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when you give it an invalid name and 
+        /// a string.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsInvalidWithText_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetCellContents("!a", "error");
+        }
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw an InvalidNameException when you give it an invalid name with
+        /// a formula.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetCellContents_CellnameIsInvalidWithFormula_InvalidNameException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Formula f = new Formula("1+1");
+            s.SetCellContents("j2j2", f);
+        }
+
+        // if a circular dependency occurrs (self reference)
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if it will
+        /// throw a CircularException when a cell tries to reference itself.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContents_SelfReferencingCell_CircularException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Formula f = new Formula("1+A1");
+            s.SetCellContents("A1", f);
+        }
+
+        // if a circular dependency occurs (linked chain of cells)
+
+        /// <summary>
+        /// Tests the spreadsheet's SetCellContents method to see if 
+        /// if throws a CircularExeption when it tries to make a chain of
+        /// cells that reference the first and end one together, thus 
+        /// creating a circular dependency.
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContents_LinkedChainOfCells_CircularException()
+        {
+            Spreadsheet s = new Spreadsheet();
+            Formula f1 = new Formula("B1");
+            Formula f2 = new Formula("C1");
+            Formula f3 = new Formula("A1");
+
+            s.SetCellContents("A1", f1);
+            s.SetCellContents("B1", f2);
+            s.SetCellContents("C1", f3);
+        }
+
+            // TESTS FOR GetDirectDependents
 
 
-    }
-}
+
+        }  
+}      
+       

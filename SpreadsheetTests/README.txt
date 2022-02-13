@@ -11,7 +11,7 @@ Copyright: CS 3500 and Nathan Hammond - This work may not be copied for use in A
 '''
 
 # Comments to Evaluators:
-- I need to write more tests, but I did write a good portion of them.
+- I wrote 22 test for the spreadsheet class.  They cover the majority of the code.
 
 
 

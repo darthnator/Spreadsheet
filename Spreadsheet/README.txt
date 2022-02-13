@@ -29,8 +29,8 @@ Copyright:	CS 3500 and Nathan Hammond - This work may not be copied for use in A
 
 # References:
 
-	1. How to Implement an abstract class	-	 https://docs.microsoft.com/en-us/visualstudio/ide/reference/implement-abstract-class?view=vs-2022
-	2. ...
+	1. How to Implement an abstract class	-	https://docs.microsoft.com/en-us/visualstudio/ide/reference/implement-abstract-class?view=vs-2022
+	2. Regex tutorial						-	https://medium.com/factory-mind/regex-tutorial-a-simple-cheatsheet-by-examples-649dc1c3f285
 
 # Time Expenditures:
 	
